@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>TaskToss</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20">
+        <path d="M2 12l19-9-6 9 6 9-19-9z" fill="currentColor"/>
+      </svg>
+    </div>
+    <h1>TaskToss</h1>
+    <span class="tag">write it. toss it.</span>
+  </header>
+
+  <main>
+    <form id="add-form" class="add-row" autocomplete="off">
+      <input id="title-input" type="text" placeholder="Add a task…" maxlength="140" required />
+      <select id="priority-input" aria-label="Priority">
+        <option value="none">no rush</option>
+        <option value="low">low</option>
+        <option value="med">medium</option>
+        <option value="high">high</option>
+      </select>
+      <input id="due-input" type="date" aria-label="Due date" />
+      <button type="submit" class="add-btn" aria-label="Add task">+</button>
+    </form>
+
+    <div class="toolbar">
+      <input id="search-input" type="search" placeholder="Search tasks and notes…" aria-label="Search" />
+      <label class="toggle">
+        <input id="show-done-toggle" type="checkbox" checked />
+        <span>show completed</span>
+      </label>
+    </div>
+
+    <section id="list" class="tickets" aria-live="polite">
+      <!-- ticket cards injected here -->
+    </section>
+
+    <p id="no-results" class="empty" hidden>Nothing matches that search.</p>
+
+    <p id="empty-state" class="empty" hidden>
+      No tasks yet. Add one above — you can toss it into any chat once it exists.
+    </p>
+  </main>
+
+  <footer class="foot">
+    <span id="sync-note">saved on this device</span>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-hidden="true"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
