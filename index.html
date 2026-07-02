@@ -20,8 +20,14 @@
       </svg>
     </div>
     <h1>TaskToss</h1>
+    <span id="streak-badge" class="streak-badge" hidden></span>
+    <span id="focus-status-badge" class="focus-status-badge" hidden></span>
     <span class="tag">write it. toss it.</span>
   </header>
+
+  <nav class="booklet" id="board-tabs" aria-label="Boards">
+    <!-- board tab stubs injected here -->
+  </nav>
 
   <main>
     <form id="add-form" class="add-row" autocomplete="off">
@@ -33,26 +39,32 @@
         <option value="high">high</option>
       </select>
       <input id="due-input" type="date" aria-label="Due date" />
+      <input id="due-time-input" type="time" aria-label="Due time" />
       <button type="submit" class="add-btn" aria-label="Add task">+</button>
     </form>
 
     <div class="toolbar">
       <input id="search-input" type="search" placeholder="Search tasks and notes…" aria-label="Search" />
-      <label class="toggle">
-        <input id="show-done-toggle" type="checkbox" checked />
-        <span>show completed</span>
-      </label>
+      <div class="view-switch" role="tablist" aria-label="View">
+        <button id="view-list-btn" class="view-btn active" role="tab" aria-selected="true">list</button>
+        <button id="view-board-btn" class="view-btn" role="tab" aria-selected="false">board</button>
+        <button id="view-calendar-btn" class="view-btn" role="tab" aria-selected="false">calendar</button>
+        <button id="view-archive-btn" class="view-btn" role="tab" aria-selected="false">archive</button>
+        <button id="view-focus-btn" class="view-btn" role="tab" aria-selected="false">focus</button>
+        <button id="view-profile-btn" class="view-btn" role="tab" aria-selected="false">profile</button>
+      </div>
     </div>
 
-    <section id="list" class="tickets" aria-live="polite">
-      <!-- ticket cards injected here -->
-    </section>
+    <div id="tag-filter" class="tag-filter" hidden></div>
 
-    <p id="no-results" class="empty" hidden>Nothing matches that search.</p>
+    <section id="list" class="tickets" aria-live="polite">
+      <!-- ticket cards / kanban injected here -->
+    </section>
 
     <p id="empty-state" class="empty" hidden>
       No tasks yet. Add one above — you can toss it into any chat once it exists.
     </p>
+    <p id="no-results" class="empty" hidden>Nothing matches here.</p>
   </main>
 
   <footer class="foot">
