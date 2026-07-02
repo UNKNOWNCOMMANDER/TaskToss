@@ -23,6 +23,10 @@
     <span class="tag">write it. toss it.</span>
   </header>
 
+  <nav class="booklet" id="board-tabs" aria-label="Boards">
+    <!-- board tab stubs injected here -->
+  </nav>
+
   <main>
     <form id="add-form" class="add-row" autocomplete="off">
       <input id="title-input" type="text" placeholder="Add a task…" maxlength="140" required />
@@ -38,21 +42,24 @@
 
     <div class="toolbar">
       <input id="search-input" type="search" placeholder="Search tasks and notes…" aria-label="Search" />
-      <label class="toggle">
-        <input id="show-done-toggle" type="checkbox" checked />
-        <span>show completed</span>
-      </label>
+      <div class="view-switch" role="tablist" aria-label="View">
+        <button id="view-list-btn" class="view-btn active" role="tab" aria-selected="true">list</button>
+        <button id="view-board-btn" class="view-btn" role="tab" aria-selected="false">board</button>
+        <button id="view-calendar-btn" class="view-btn" role="tab" aria-selected="false">calendar</button>
+        <button id="view-archive-btn" class="view-btn" role="tab" aria-selected="false">archive</button>
+      </div>
     </div>
 
-    <section id="list" class="tickets" aria-live="polite">
-      <!-- ticket cards injected here -->
-    </section>
+    <div id="tag-filter" class="tag-filter" hidden></div>
 
-    <p id="no-results" class="empty" hidden>Nothing matches that search.</p>
+    <section id="list" class="tickets" aria-live="polite">
+      <!-- ticket cards / kanban injected here -->
+    </section>
 
     <p id="empty-state" class="empty" hidden>
       No tasks yet. Add one above — you can toss it into any chat once it exists.
     </p>
+    <p id="no-results" class="empty" hidden>Nothing matches here.</p>
   </main>
 
   <footer class="foot">
