@@ -176,6 +176,8 @@
   const focusStatusBadgeEl = document.getElementById("focus-status-badge");
 
   let calendarWeekStart = startOfWeek(new Date());
+  let calendarMonthCursor = startOfMonth(new Date());
+  let calendarMode = "week"; // week | month
   let calendarHiddenBoards = new Set(); // board ids toggled off in the calendar legend
 
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -197,6 +199,29 @@
     const d = new Date(date);
     d.setDate(d.getDate() + n);
     return d;
+  }
+  function startOfMonth(date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(1);
+    return d;
+  }
+  function addMonths(date, n) {
+    const d = new Date(date);
+    d.setDate(1);
+    d.setMonth(d.getMonth() + n);
+    return d;
+  }
+  function monthGridDays(monthStart) {
+    const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+    const gridStart = startOfWeek(monthStart);
+    const gridEnd = addDays(startOfWeek(monthEnd), 6);
+    const days = [];
+    for (let d = new Date(gridStart); d <= gridEnd; d = addDays(d, 1)) days.push(new Date(d));
+    return days;
+  }
+  function formatMonthLabel(monthStart) {
+    return monthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   }
   function toDateKey(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
@@ -424,21 +449,45 @@
   }
 
   function renderCalendarView() {
-    const start = calendarWeekStart;
-    const days = [...Array(7)].map((_, i) => addDays(start, i));
+    const isMonth = calendarMode === "month";
+    const days = isMonth ? monthGridDays(calendarMonthCursor) : [...Array(7)].map((_, i) => addDays(calendarWeekStart, i));
+    const focusMonth = calendarMonthCursor.getMonth();
 
     const nav = document.createElement("div");
     nav.className = "cal-nav";
     nav.innerHTML = `
-      <button id="cal-prev" aria-label="Previous week">‹</button>
+      <button id="cal-prev" aria-label="Previous">‹</button>
       <button id="cal-today">today</button>
-      <button id="cal-next" aria-label="Next week">›</button>
-      <span class="cal-range">${formatWeekRange(start)}</span>
+      <button id="cal-next" aria-label="Next">›</button>
+      <span class="cal-range">${isMonth ? formatMonthLabel(calendarMonthCursor) : formatWeekRange(calendarWeekStart)}</span>
+      <div class="cal-mode-switch">
+        <button type="button" class="cal-mode-btn ${!isMonth ? "active" : ""}" data-mode="week">week</button>
+        <button type="button" class="cal-mode-btn ${isMonth ? "active" : ""}" data-mode="month">month</button>
+      </div>
     `;
     listEl.appendChild(nav);
-    nav.querySelector("#cal-prev").addEventListener("click", () => { calendarWeekStart = addDays(calendarWeekStart, -7); renderAll(); });
-    nav.querySelector("#cal-next").addEventListener("click", () => { calendarWeekStart = addDays(calendarWeekStart, 7); renderAll(); });
-    nav.querySelector("#cal-today").addEventListener("click", () => { calendarWeekStart = startOfWeek(new Date()); renderAll(); });
+    nav.querySelector("#cal-prev").addEventListener("click", () => {
+      if (isMonth) calendarMonthCursor = addMonths(calendarMonthCursor, -1);
+      else calendarWeekStart = addDays(calendarWeekStart, -7);
+      renderAll();
+    });
+    nav.querySelector("#cal-next").addEventListener("click", () => {
+      if (isMonth) calendarMonthCursor = addMonths(calendarMonthCursor, 1);
+      else calendarWeekStart = addDays(calendarWeekStart, 7);
+      renderAll();
+    });
+    nav.querySelector("#cal-today").addEventListener("click", () => {
+      calendarWeekStart = startOfWeek(new Date());
+      calendarMonthCursor = startOfMonth(new Date());
+      renderAll();
+    });
+    nav.querySelectorAll(".cal-mode-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (calendarMode === btn.dataset.mode) return;
+        calendarMode = btn.dataset.mode;
+        renderAll();
+      });
+    });
 
     // Legend mirrors Notion Calendar's toggleable calendar-source list — here, each board is a "calendar".
     const legend = document.createElement("div");
@@ -460,14 +509,23 @@
       });
     });
 
+    if (isMonth) {
+      const weekHead = document.createElement("div");
+      weekHead.className = "cal-week-head";
+      const sample = [...Array(7)].map((_, i) => addDays(startOfWeek(new Date()), i));
+      weekHead.innerHTML = sample.map((d) => `<span>${d.toLocaleDateString(undefined, { weekday: "short" })}</span>`).join("");
+      listEl.appendChild(weekHead);
+    }
+
     const grid = document.createElement("div");
-    grid.className = "cal-grid";
+    grid.className = "cal-grid" + (isMonth ? " cal-grid-month" : "");
     const todayKey = toDateKey(new Date());
     const dayEls = {};
     for (const d of days) {
       const key = toDateKey(d);
+      const outsideMonth = isMonth && d.getMonth() !== focusMonth;
       const col = document.createElement("div");
-      col.className = "cal-day" + (key === todayKey ? " today" : "");
+      col.className = "cal-day" + (key === todayKey ? " today" : "") + (outsideMonth ? " other-month" : "");
       col.innerHTML = `<div class="cal-day-head">
         <span class="cal-day-name">${d.toLocaleDateString(undefined, { weekday: "short" })}</span>
         <span class="cal-day-num">${d.getDate()}</span>
@@ -483,17 +541,21 @@
       const byDate = {};
       for (const t of filtered) (byDate[t.due] = byDate[t.due] || []).push(t);
 
+      const maxShown = isMonth ? 3 : Infinity;
       for (const key of Object.keys(dayEls)) {
         const col = dayEls[key];
         const items = (byDate[key] || []).sort((a, b) => (a.priority === "high" ? 0 : 1) - (b.priority === "high" ? 0 : 1));
         if (!items.length) {
-          const empty = document.createElement("div");
-          empty.className = "cal-day-empty";
-          empty.textContent = "—";
-          col.appendChild(empty);
+          if (!isMonth) {
+            const empty = document.createElement("div");
+            empty.className = "cal-day-empty";
+            empty.textContent = "—";
+            col.appendChild(empty);
+          }
           continue;
         }
-        for (const t of items) {
+        const shown = items.slice(0, maxShown);
+        for (const t of shown) {
           const chip = document.createElement("div");
           chip.className = "cal-chip" + (t.status === "done" ? " done" : "");
           chip.style.borderLeftColor = t.boardColor;
@@ -507,6 +569,17 @@
             renderAll();
           });
           col.appendChild(chip);
+        }
+        if (items.length > shown.length) {
+          const more = document.createElement("div");
+          more.className = "cal-more";
+          more.textContent = `+${items.length - shown.length} more`;
+          more.addEventListener("click", () => {
+            calendarWeekStart = startOfWeek(new Date(key + "T00:00:00"));
+            calendarMode = "week";
+            renderAll();
+          });
+          col.appendChild(more);
         }
       }
     });
