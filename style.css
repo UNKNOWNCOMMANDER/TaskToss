@@ -409,6 +409,7 @@ main {
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 .cal-nav button {
   border: 1px solid var(--line);
@@ -426,6 +427,25 @@ main {
   font-size: 14px;
   margin-right: auto;
 }
+
+.cal-mode-switch {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.cal-mode-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px 10px;
+  background: var(--card);
+  color: var(--slate);
+  border: none;
+  border-right: 1px solid var(--line);
+  cursor: pointer;
+}
+.cal-mode-btn:last-child { border-right: none; }
+.cal-mode-btn.active { background: var(--ink); color: var(--paper); }
 
 .cal-legend {
   display: flex;
@@ -487,6 +507,55 @@ main {
 .cal-chip.done { opacity: 0.5; text-decoration: line-through; }
 .cal-chip .cal-chip-board { display: block; font-size: 8.5px; color: var(--slate); text-transform: uppercase; letter-spacing: 0.03em; margin-top: 1px; }
 .cal-day-empty { font-size: 10px; color: var(--slate); text-align: center; margin-top: 14px; opacity: 0.6; }
+
+/* --- calendar month view: same grid, denser cells --- */
+.cal-grid-month {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  min-width: 0;
+  overflow-x: visible;
+  gap: 5px;
+}
+.cal-grid-month .cal-day {
+  min-height: 78px;
+  min-width: 0;
+  padding: 5px 4px;
+}
+.cal-grid-month .cal-day-head { margin-bottom: 4px; text-align: left; }
+.cal-grid-month .cal-day-num { font-size: 12px; }
+.cal-grid-month .cal-day.today .cal-day-num { width: 17px; height: 17px; font-size: 11px; }
+.cal-week-head {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.cal-week-head span {
+  text-align: center;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate);
+}
+.cal-grid-month .cal-day-name { display: none; }
+.cal-day.other-month { opacity: 0.4; }
+.cal-grid-month .cal-chip {
+  font-size: 9.5px;
+  padding: 2px 5px;
+  margin-bottom: 3px;
+}
+.cal-grid-month .cal-chip .cal-chip-board { display: none; }
+.cal-more {
+  font-size: 9px;
+  color: var(--slate);
+  cursor: pointer;
+  padding: 1px 2px;
+}
+.cal-more:hover { color: var(--signal); }
+
+@media (max-width: 560px) {
+  .cal-grid-month .cal-day { min-height: 56px; }
+  .cal-grid-month .cal-day-name { display: none; }
+}
 
 .empty {
   text-align: center; color: var(--slate); font-size: 13px; margin-top: 40px; line-height: 1.6;
